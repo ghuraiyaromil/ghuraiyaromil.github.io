@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Manager — Romil Ghuraiya</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060A0E;--bg2:#0A1018;--teal:#00E5A0;--blue:#1AF0FF;--orange:#FF6B35;--dim:#1E3040;--text:#C8DCE8;--muted:#4A6A80;--mono:'Share Tech Mono',monospace;--sans:'Barlow',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+/* HEADER */
+header{background:var(--bg2);border-bottom:1px solid var(--dim);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;}
+.logo{font-family:var(--mono);font-size:14px;color:var(--teal);letter-spacing:2px;}
+.back-btn{font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:8px 16px;border:1px solid var(--dim);color:var(--muted);text-decoration:none;transition:all .2s;}
+.back-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--dim);background:var(--bg2);padding:0 40px;}
+.tab{font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:16px 24px;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab:hover{color:var(--teal);}
+
+/* MAIN */
+main{max-width:900px;margin:0 auto;padding:48px 40px;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* SECTION TITLE */
+.panel-title{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:var(--teal);margin-bottom:6px;}
+.panel-desc{font-size:14px;color:var(--muted);margin-bottom:36px;line-height:1.7;}
+
+/* FORM */
+.form-group{margin-bottom:20px;}
+label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);display:block;margin-bottom:8px;}
+input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--dim);color:var(--text);font-family:var(--sans);font-size:14px;padding:11px 14px;outline:none;transition:border .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+select option{background:var(--bg2);}
+textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* FILE DROP */
+.drop-zone{border:1px dashed var(--dim);padding:32px;text-align:center;transition:all .2s;position:relative;cursor:pointer;}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--teal);background:rgba(0,229,160,.04);}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop-icon{font-size:32px;margin-bottom:10px;opacity:.5;}
+.drop-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);}
+.drop-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.drop-preview-item{position:relative;width:80px;height:60px;border:1px solid var(--dim);overflow:hidden;}
+.drop-preview-item img{width:100%;height:100%;object-fit:cover;}
+.drop-preview-item .fname{font-family:var(--mono);font-size:8px;color:var(--muted);padding:2px 4px;background:var(--bg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* GENERATE BTN */
+.gen-btn{font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:13px 28px;background:var(--teal);color:#000;border:none;cursor:pointer;font-weight:700;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:all .2s;margin-top:8px;}
+.gen-btn:hover{background:var(--blue);}
+.clear-btn{font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:13px 24px;background:transparent;color:var(--muted);border:1px solid var(--dim);cursor:pointer;transition:all .2s;margin-top:8px;margin-left:10px;}
+.clear-btn:hover{border-color:var(--muted);color:var(--text);}
+
+/* OUTPUT */
+.output-box{margin-top:28px;display:none;}
+.output-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.output-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--teal);}
+.copy-btn{font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:7px 16px;background:rgba(0,229,160,.1);color:var(--teal);border:1px solid rgba(0,229,160,.3);cursor:pointer;transition:all .2s;}
+.copy-btn:hover{background:rgba(0,229,160,.2);}
+.copy-btn.copied{color:var(--bg);background:var(--teal);}
+pre{background:var(--bg2);border:1px solid var(--dim);padding:20px;font-family:var(--mono);font-size:12px;color:#a8d4a8;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:28px;}
+.step{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid var(--dim);}
+.step-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--teal);flex-shrink:0;width:28px;}
+.step-content{}
+.step-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:5px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.7;}
+.step-code{font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--dim);padding:8px 14px;margin-top:8px;color:var(--blue);display:inline-block;}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:12px;margin-top:28px;}
+.check-item{display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--bg2);border:1px solid var(--dim);}
+.check-item input[type=checkbox]{margin-top:2px;accent-color:var(--teal);width:16px;height:16px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:14px;color:var(--muted);line-height:1.6;}
+.check-label strong{color:var(--text);}
+.check-label code{font-family:var(--mono);font-size:11px;color:var(--blue);background:rgba(26,240,255,.08);padding:1px 6px;}
+
+/* UPLOAD GUIDE TABLE */
+.upload-table{width:100%;border-collapse:collapse;margin-top:16px;}
+.upload-table th{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--teal);text-align:left;padding:10px 14px;border-bottom:1px solid var(--dim);}
+.upload-table td{font-size:13px;color:var(--muted);padding:12px 14px;border-bottom:1px solid rgba(30,48,64,.5);}
+.upload-table td:first-child{font-family:var(--mono);font-size:11px;color:var(--blue);}
+.upload-table tr:hover td{background:rgba(0,229,160,.03);}
+
+/* NOTICE */
+.notice{background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.2);padding:16px 20px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
+.notice strong{color:var(--teal);}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--dim);margin:36px 0;}
+
+@media(max-width:600px){
+  .form-row{grid-template-columns:1fr;}
+  main{padding:32px 20px;}
+  header{padding:16px 20px;}
+  .tabs{padding:0 20px;overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚙️ SITE MANAGER — ROMIL GHURAIYA</div>
+  <a href="index.html" class="back-btn">← BACK TO SITE</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('gallery',this)">📸 GALLERY</button>
+  <button class="tab" onclick="showPanel('certs',this)">📜 CERTIFICATES</button>
+  <button class="tab" onclick="showPanel('achieve',this)">🏆 ACHIEVEMENTS</button>
+  <button class="tab" onclick="showPanel('papers',this)">📄 PAPERS</button>
+  <button class="tab" onclick="showPanel('guide',this)">📖 UPLOAD GUIDE</button>
+  <button class="tab" onclick="showPanel('checklist',this)">✅ CHECKLIST</button>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════ GALLERY ═══════════════════════════════ -->
+<div class="panel active" id="panel-gallery">
+  <div class="panel-title">// GALLERY IMAGE GENERATOR</div>
+  <p class="panel-desc">Fill in the details below. The tool generates the HTML code you need to paste into <code style="font-family:var(--mono);color:var(--blue)">index.html</code> to add a new gallery photo or video.</p>
+
+  <div class="notice"><strong>Before you start:</strong> Upload your image to the <code style="font-family:var(--mono)">images/</code> folder in your GitHub repo first, then use that filename here.</div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>IMAGE FILENAME (e.g. ebaja_01.jpg)</label>
+      <input type="text" id="g-file" placeholder="images/ebaja_01.jpg" oninput="previewGallery()">
+    </div>
+    <div class="form-group">
+      <label>CATEGORY</label>
+      <select id="g-cat" onchange="previewGallery()">
+        <option value="ebaja">SAE eBaja</option>
+        <option value="cfd">CFD / ANSYS</option>
+        <option value="ml">ML Project</option>
+        <option value="aerothon">Aerothon</option>
+        <option value="club">Club / Events</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>CAPTION (shown on hover)</label>
+    <input type="text" id="g-caption" placeholder="e.g. SAE eBaja 2025 — Brake System Design" oninput="previewGallery()">
+  </div>
+  <div class="form-group">
+    <label>ALT TEXT (accessibility description)</label>
+    <input type="text" id="g-alt" placeholder="e.g. Photo of brake system on electric ATV" oninput="previewGallery()">
+  </div>
+
+  <button class="gen-btn" onclick="genGallery()">GENERATE CODE</button>
+  <button class="clear-btn" onclick="clearForm('gallery')">CLEAR</button>
+
+  <div class="output-box" id="out-gallery">
+    <div class="output-header">
+      <span class="output-label">// COPY THIS INTO index.html — INSIDE THE GALLERY GRID</span>
+      <button class="copy-btn" onclick="copyCode('code-gallery',this)">COPY</button>
+    </div>
+    <pre id="code-gallery"></pre>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;letter-spacing:1px;">→ In index.html, find the line that says <span style="color:var(--blue)">&lt;!-- ▼▼▼ GALLERY ITEM TEMPLATE</span> and paste above it — or replace any placeholder block.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CERTIFICATES ═══════════════════════════════ -->
+<div class="panel" id="panel-certs">
+  <div class="panel-title">// CERTIFICATE CARD GENERATOR</div>
+  <p class="panel-desc">Add a new certificate to your website. Upload the image and PDF to the <code style="font-family:var(--mono);color:var(--blue)">certificates/</code> folder first, then generate the card code below.</p>
+
+  <div class="notice"><strong>File naming tip:</strong> Use consistent names like <code style="font-family:var(--mono)">certificates/google_cyber.jpg</code> and <code style="font-family:var(--mono)">certificates/google_cyber.pdf</code> — same name, different extension.</div>
+
+  <div class="form-group">
+    <label>CERTIFICATE NAME</label>
+    <input type="text" id="c-name" placeholder="e.g. Google Cybersecurity Professional" oninput="previewCert()">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>ISSUING BODY</label>
+      <input type="text" id="c-by" placeholder="e.g. COURSERA / GOOGLE" oninput="previewCert()">
+    </div>
+    <div class="form-group">
+      <label>YEAR</label>
+      <input type="text" id="c-year" placeholder="e.g. 2024" oninput="previewCert()">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>IMAGE FILE (JPG screenshot of cert)</label>
+      <input type="text" id="c-img" placeholder="certificates/google_cyber.jpg" oninput="previewCert()">
+    </div>
+    <div class="form-group">
+      <label>PDF FILE (original certificate)</label>
+      <input type="text" id="c-pdf" placeholder="certificates/google_cyber.pdf" oninput="previewCert()">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>HAS IMAGE? (toggle)</label>
+    <select id="c-hasimg" onchange="previewCert()">
+      <option value="yes">Yes — I have a screenshot/photo of the cert</option>
+      <option value="no">No — show placeholder for now</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>EMOJI ICON (shown in placeholder if no image)</label>
+    <input type="text" id="c-icon" placeholder="e.g. 📜 or 🔐 or 🏭" value="📜" oninput="previewCert()">
+  </div>
+
+  <button class="gen-btn" onclick="genCert()">GENERATE CODE</button>
+  <button class="clear-btn" onclick="clearForm('certs')">CLEAR</button>
+
+  <div class="output-box" id="out-certs">
+    <div class="output-header">
+      <span class="output-label">// COPY THIS INTO index.html — INSIDE THE CERTS GRID</span>
+      <button class="copy-btn" onclick="copyCode('code-certs',this)">COPY</button>
+    </div>
+    <pre id="code-certs"></pre>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;letter-spacing:1px;">→ In index.html, find the line <span style="color:var(--blue)">&lt;!-- ▼ CERT TEMPLATE</span> and paste your new card above it.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ACHIEVEMENTS ═══════════════════════════════ -->
+<div class="panel" id="panel-achieve">
+  <div class="panel-title">// ACHIEVEMENT CARD GENERATOR</div>
+  <p class="panel-desc">Generate a new achievement card for the Awards & Recognition section. No file uploads needed — just text.</p>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>ACHIEVEMENT TITLE</label>
+      <input type="text" id="a-title" placeholder="e.g. SAE eBaja India 2025">
+    </div>
+    <div class="form-group">
+      <label>YEAR</label>
+      <input type="text" id="a-year" placeholder="e.g. 2025">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>ORGANISATION / LEVEL</label>
+    <input type="text" id="a-org" placeholder="e.g. SAE INDIA · NATIONAL LEVEL">
+  </div>
+  <div class="form-group">
+    <label>DESCRIPTION (1–3 sentences)</label>
+    <textarea id="a-desc" placeholder="Describe what you achieved and its significance..."></textarea>
+  </div>
+  <div class="form-group">
+    <label>EMOJI ICON</label>
+    <input type="text" id="a-icon" placeholder="e.g. 🏆 or 🥇 or 🎖️" value="🏆">
+  </div>
+
+  <button class="gen-btn" onclick="genAchieve()">GENERATE CODE</button>
+  <button class="clear-btn" onclick="clearForm('achieve')">CLEAR</button>
+
+  <div class="output-box" id="out-achieve">
+    <div class="output-header">
+      <span class="output-label">// COPY THIS INTO index.html — INSIDE THE ACHIEVE GRID</span>
+      <button class="copy-btn" onclick="copyCode('code-achieve',this)">COPY</button>
+    </div>
+    <pre id="code-achieve"></pre>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;letter-spacing:1px;">→ In index.html, find the line <span style="color:var(--blue)">&lt;!-- ▼ ADD MORE ACHIEVEMENTS HERE</span> and paste your card above it.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAPERS ═══════════════════════════════ -->
+<div class="panel" id="panel-papers">
+  <div class="panel-title">// PAPER / REPORT GENERATOR</div>
+  <p class="panel-desc">Add a research paper, technical report, or thesis to the Papers & Reports section. Upload your PDF to the <code style="font-family:var(--mono);color:var(--blue)">reports/</code> folder first.</p>
+
+  <div class="form-group">
+    <label>TITLE</label>
+    <input type="text" id="p-title" placeholder="e.g. CFD Performance Analysis of AHU Blower Fan">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>TYPE</label>
+      <select id="p-type">
+        <option value="research">Research Paper</option>
+        <option value="report">Technical Report</option>
+        <option value="thesis">Thesis</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>STATUS</label>
+      <select id="p-status">
+        <option value="available">Available — I have the PDF</option>
+        <option value="progress">In Progress — no PDF yet</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>AUTHORS / META (name, institution, year)</label>
+    <input type="text" id="p-meta" placeholder="e.g. ROMIL GHURAIYA · SMVDU · JULY 2025">
+  </div>
+  <div class="form-group">
+    <label>ABSTRACT / DESCRIPTION</label>
+    <textarea id="p-abstract" placeholder="Brief description of what this paper covers..."></textarea>
+  </div>
+  <div class="form-group" id="p-pdf-group">
+    <label>PDF FILE PATH</label>
+    <input type="text" id="p-pdf" placeholder="reports/ahu_cfd_report.pdf">
+  </div>
+
+  <button class="gen-btn" onclick="genPaper()">GENERATE CODE</button>
+  <button class="clear-btn" onclick="clearForm('papers')">CLEAR</button>
+
+  <div class="output-box" id="out-papers">
+    <div class="output-header">
+      <span class="output-label">// COPY THIS INTO index.html — INSIDE THE PAPERS LIST</span>
+      <button class="copy-btn" onclick="copyCode('code-papers',this)">COPY</button>
+    </div>
+    <pre id="code-papers"></pre>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;letter-spacing:1px;">→ In index.html, find the line <span style="color:var(--blue)">&lt;!-- ▼ ADD MORE PAPERS</span> and paste your item above it.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ UPLOAD GUIDE ═══════════════════════════════ -->
+<div class="panel" id="panel-guide">
+  <div class="panel-title">// COMPLETE UPLOAD GUIDE</div>
+  <p class="panel-desc">Step-by-step process for uploading all files to your GitHub repo so they appear on your live website.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Go to your GitHub repo</div>
+        <div class="step-desc">Open <strong style="color:var(--text)">github.com/ghuraiyaromil/ghuraiyaromil.github.io</strong> in your browser and make sure you're logged in.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Click "Add file → Upload files"</div>
+        <div class="step-desc">This button is on the main repo page, above the file list on the right side.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Type the folder path before uploading</div>
+        <div class="step-desc">At the top of the upload page you'll see a file path box. Click inside it and type the folder name with a slash before you drop your files. GitHub will create the folder automatically.</div>
+        <div class="step-code">For gallery photos → type: images/</div>
+        <div class="step-code" style="margin-top:6px">For certificates → type: certificates/</div>
+        <div class="step-code" style="margin-top:6px">For reports/PDFs → type: reports/</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Drag and drop your files</div>
+        <div class="step-desc">Drop all files for that folder at once. You can upload multiple files in one go. Make sure the filenames match exactly what you typed in the code generator above (case-sensitive).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Commit the upload</div>
+        <div class="step-desc">Scroll down, leave the commit message as-is or type something like "Add gallery images", select <strong style="color:var(--text)">"Commit directly to main branch"</strong>, then click the green Commit button.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-title">Update index.html with the generated code</div>
+        <div class="step-desc">Go back to your repo, click <strong style="color:var(--text)">index.html</strong>, then click the <strong style="color:var(--text)">pencil icon (Edit)</strong>. Paste the code you generated from this tool into the right section. Commit when done.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-title">Wait 1–2 minutes, then check your live site</div>
+        <div class="step-desc">Open <strong style="color:var(--text)">https://ghuraiyaromil.github.io</strong> — GitHub Pages takes about 1–2 minutes to rebuild after every commit.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="panel-title">// FILE NAMING REFERENCE</div>
+  <table class="upload-table">
+    <tr><th>FOLDER</th><th>FILE</th><th>WHAT IT IS</th></tr>
+    <tr><td>images/ebaja_01.jpg</td><td>Gallery photo</td><td>SAE eBaja ATV photo</td></tr>
+    <tr><td>images/cfd_velocity.png</td><td>Gallery photo</td><td>ANSYS velocity contour</td></tr>
+    <tr><td>images/cfd_pressure.png</td><td>Gallery photo</td><td>Pressure distribution result</td></tr>
+    <tr><td>images/ml_map.png</td><td>Gallery photo</td><td>ML mineral map output</td></tr>
+    <tr><td>images/aerothon_uav.jpg</td><td>Gallery photo</td><td>UAV design photo</td></tr>
+    <tr><td>certificates/google_cyber.jpg</td><td>Cert image</td><td>Screenshot of Google cert</td></tr>
+    <tr><td>certificates/google_cyber.pdf</td><td>Cert PDF</td><td>Original Google cert PDF</td></tr>
+    <tr><td>certificates/nptel_iiot.jpg</td><td>Cert image</td><td>Screenshot of NPTEL cert</td></tr>
+    <tr><td>certificates/nptel_iiot.pdf</td><td>Cert PDF</td><td>Original NPTEL cert PDF</td></tr>
+    <tr><td>certificates/sae_ebaja.pdf</td><td>Cert PDF</td><td>SAE eBaja participation cert</td></tr>
+    <tr><td>reports/ahu_cfd_report.pdf</td><td>Report PDF</td><td>CFD internship technical report</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════ CHECKLIST ═══════════════════════════════ -->
+<div class="panel" id="panel-checklist">
+  <div class="panel-title">// UPLOAD CHECKLIST</div>
+  <p class="panel-desc">Track everything that still needs to be uploaded. Check off items as you complete them.</p>
+
+  <div class="checklist">
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Gallery — SAE eBaja photos</strong><br>Upload <code>images/ebaja_01.jpg</code>, <code>images/ebaja_brakes.jpg</code>, <code>images/ebaja_team.jpg</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Gallery — CFD / ANSYS screenshots</strong><br>Upload <code>images/cfd_velocity.png</code>, <code>images/cfd_pressure.png</code>, <code>images/cfd_solidworks.png</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Gallery — ML project outputs</strong><br>Upload <code>images/ml_map.png</code>, <code>images/ml_dataset.png</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Gallery — Aerothon UAV photo</strong><br>Upload <code>images/aerothon_uav.jpg</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Gallery — Club / Event photos</strong><br>Upload <code>images/club_event.jpg</code> (+ any others)</div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Certificate — Google Cybersecurity</strong><br>Upload <code>certificates/google_cyber.jpg</code> + <code>certificates/google_cyber.pdf</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Certificate — NPTEL Industry 4.0 / IIoT</strong><br>Upload <code>certificates/nptel_iiot.jpg</code> + <code>certificates/nptel_iiot.pdf</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Certificate — SAE eBaja participation</strong><br>Upload <code>certificates/sae_ebaja.jpg</code> + <code>certificates/sae_ebaja.pdf</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Certificate — SAE Aerothon participation</strong><br>Upload <code>certificates/sae_aerothon.jpg</code> + <code>certificates/sae_aerothon.pdf</code></div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Report — AHU CFD Technical Report</strong><br>Upload <code>reports/ahu_cfd_report.pdf</code> — then update the "locked" link in index.html</div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Paper — ML Mineral Mapping (when ready)</strong><br>Upload <code>reports/mineral_ml_paper.pdf</code> — then update the "locked" link in index.html</div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Update index.html gallery placeholders</strong><br>Replace each <code>&lt;div class="g-placeholder"&gt;</code> with <code>&lt;img src="images/..."&gt;</code> using code from the Gallery tab above</div></div>
+    <div class="check-item"><input type="checkbox"><div class="check-label"><strong>Update index.html cert placeholders</strong><br>Replace each <code>&lt;div class="cert-placeholder"&gt;</code> with <code>&lt;img src="certificates/..."&gt;</code> using code from the Certs tab above</div></div>
+  </div>
+
+  <hr class="divider">
+  <p style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;">NOTE: Checkboxes are saved in this browser session only. They reset on page reload.</p>
+</div>
+
+</main>
+
+<script>
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function esc(str) {
+  return (str || '').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── GALLERY GENERATOR ──
+function genGallery() {
+  const file = document.getElementById('g-file').value.trim() || 'images/YOUR_PHOTO.jpg';
+  const cat = document.getElementById('g-cat').value;
+  const caption = document.getElementById('g-caption').value.trim() || 'Caption';
+  const alt = document.getElementById('g-alt').value.trim() || caption;
+  const code = `<div class="gallery-item" data-cat="${cat}" data-caption="${esc(caption)}">
+  <img src="${esc(file)}" alt="${esc(alt)}" onclick="openLB(this)">
+  <div class="gallery-overlay"><div class="gallery-caption">${esc(caption)}</div></div>
+</div>`;
+  document.getElementById('code-gallery').textContent = code;
+  document.getElementById('out-gallery').style.display = 'block';
+}
+
+// ── CERT GENERATOR ──
+function genCert() {
+  const name = document.getElementById('c-name').value.trim() || 'Certificate Name';
+  const by = document.getElementById('c-by').value.trim() || 'ISSUING BODY';
+  const year = document.getElementById('c-year').value.trim() || '2024';
+  const img = document.getElementById('c-img').value.trim();
+  const pdf = document.getElementById('c-pdf').value.trim() || '#';
+  const hasImg = document.getElementById('c-hasimg').value;
+  const icon = document.getElementById('c-icon').value.trim() || '📜';
+
+  const imgBlock = hasImg === 'yes'
+    ? `  <img src="${esc(img)}" alt="${esc(name)}" onclick="openLB(this,'${esc(name)}')">`
+    : `  <div class="cert-placeholder">
+    <div class="cert-placeholder-icon">${icon}</div>
+    <div class="cert-placeholder-text">Upload: ${esc(img || 'certificates/your_cert.jpg')}</div>
+  </div>`;
+
+  const code = `<div class="cert-card">
+  <div class="cert-img-wrap">
+${imgBlock}
+  </div>
+  <div class="cert-body">
+    <div class="cert-name">${esc(name)}</div>
+    <div class="cert-by">${esc(by)}</div>
+    <div class="cert-year">${esc(year)}</div>
+    <a href="${esc(pdf)}" target="_blank" class="cert-view-btn">VIEW CERT ↗</a>
+  </div>
+</div>`;
+  document.getElementById('code-certs').textContent = code;
+  document.getElementById('out-certs').style.display = 'block';
+}
+
+// ── ACHIEVEMENT GENERATOR ──
+function genAchieve() {
+  const title = document.getElementById('a-title').value.trim() || 'Achievement Title';
+  const year = document.getElementById('a-year').value.trim() || '2025';
+  const org = document.getElementById('a-org').value.trim() || 'ORGANISATION';
+  const desc = document.getElementById('a-desc').value.trim() || 'Description of the achievement.';
+  const icon = document.getElementById('a-icon').value.trim() || '🏆';
+  const code = `<div class="achieve-card">
+  <div class="achieve-year">${esc(year)}</div>
+  <div class="achieve-icon">${icon}</div>
+  <div class="achieve-title">${esc(title)}</div>
+  <div class="achieve-org">${esc(org)}</div>
+  <div class="achieve-desc">${esc(desc)}</div>
+</div>`;
+  document.getElementById('code-achieve').textContent = code;
+  document.getElementById('out-achieve').style.display = 'block';
+}
+
+// ── PAPER GENERATOR ──
+function genPaper() {
+  const title = document.getElementById('p-title').value.trim() || 'Paper Title';
+  const type = document.getElementById('p-type').value;
+  const status = document.getElementById('p-status').value;
+  const meta = document.getElementById('p-meta').value.trim() || 'ROMIL GHURAIYA · SMVDU';
+  const abstract = document.getElementById('p-abstract').value.trim() || 'Abstract text.';
+  const pdf = document.getElementById('p-pdf').value.trim();
+
+  const linkBlock = status === 'available' && pdf
+    ? `  <a href="${esc(pdf)}" target="_blank" class="paper-link">📄 VIEW ${type === 'report' ? 'REPORT' : type === 'thesis' ? 'THESIS' : 'PAPER'} ↗</a>`
+    : `  <span class="paper-link locked">📄 UPLOAD PDF TO UNLOCK</span>`;
+
+  const code = `<div class="paper-item">
+  <div class="paper-badge ${type}">${type.toUpperCase()}</div>
+  <div>
+    <div class="paper-title">${esc(title)}</div>
+    <div class="paper-meta">${esc(meta)}</div>
+    <div class="paper-abstract">${esc(abstract)}</div>
+${linkBlock}
+  </div>
+</div>`;
+  document.getElementById('code-papers').textContent = code;
+  document.getElementById('out-papers').style.display = 'block';
+}
+
+// ── COPY BUTTON ──
+function copyCode(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── CLEAR ──
+function clearForm(section) {
+  const inputs = document.getElementById('panel-' + section).querySelectorAll('input, textarea');
+  inputs.forEach(i => { if(i.id.endsWith('-icon')) return; i.value = ''; });
+  const out = document.getElementById('out-' + section);
+  if(out) out.style.display = 'none';
+}
+</script>
+</body>
+</html>
